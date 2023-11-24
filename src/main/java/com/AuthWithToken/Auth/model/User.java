@@ -1,9 +1,8 @@
 package com.AuthWithToken.Auth.model;
 
-import liquibase.pro.packaged.R;
+import jakarta.persistence.*;
 import lombok.Data;
 
-import javax.persistence.*;
 import java.util.List;
 
 @Entity
