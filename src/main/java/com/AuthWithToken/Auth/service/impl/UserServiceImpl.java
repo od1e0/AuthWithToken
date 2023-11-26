@@ -1,4 +1,5 @@
-package com.AuthWithToken.Auth.service.implinitation;
+package com.AuthWithToken.Auth.service.impl;
+
 
 import com.AuthWithToken.Auth.model.Role;
 import com.AuthWithToken.Auth.model.Status;
@@ -15,30 +16,30 @@ import java.util.ArrayList;
 import java.util.List;
 @Service
 @Slf4j
-public class UserServiceImplementation implements UserService {
+public class UserServiceImpl implements UserService {
 
-    private final UserRepo userRepo;
-    private final RoleRepo roleRepo;
+    private final UserRepo userRepository;
+    private final RoleRepo roleRepository;
     private final BCryptPasswordEncoder passwordEncoder;
 
     @Autowired
-    public UserServiceImplementation(UserRepo userRepo, RoleRepo roleRepo, BCryptPasswordEncoder passwordEncoder) {
-        this.userRepo = userRepo;
-        this.roleRepo = roleRepo;
+    public UserServiceImpl(UserRepo userRepository, RoleRepo roleRepository, BCryptPasswordEncoder passwordEncoder) {
+        this.userRepository = userRepository;
+        this.roleRepository = roleRepository;
         this.passwordEncoder = passwordEncoder;
     }
 
-
     @Override
     public User register(User user) {
-        Role roleUser = roleRepo.findByName("ROLE_USER");
+        Role roleUser = roleRepository.findByName("ROLE_USER");
         List<Role> userRoles = new ArrayList<>();
+        userRoles.add(roleUser);
 
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         user.setRoles(userRoles);
         user.setStatus(Status.ACTIVE);
 
-        User registeredUser = userRepo.saveAndFlush(user);
+        User registeredUser = userRepository.save(user);
 
         log.info("IN register - user: {} successfully registered", registeredUser);
 
@@ -46,15 +47,22 @@ public class UserServiceImplementation implements UserService {
     }
 
     @Override
+    public List<User> getAll() {
+        List<User> result = userRepository.findAll();
+        log.info("IN getAll - {} users found", result.size());
+        return result;
+    }
+
+    @Override
     public User findByUsername(String username) {
-        User result = userRepo.findByUsername(username);
+        User result = userRepository.findByUsername(username);
         log.info("IN findByUsername - user: {} found by username: {}", result, username);
         return result;
     }
 
     @Override
     public User findById(Long id) {
-        User result = (User) userRepo.findById(id).orElse(null);
+        User result = userRepository.findById(id).orElse(null);
 
         if (result == null) {
             log.warn("IN findById - no user found by id: {}", id);
@@ -63,5 +71,11 @@ public class UserServiceImplementation implements UserService {
 
         log.info("IN findById - user: {} found by id: {}", result);
         return result;
+    }
+
+    @Override
+    public void delete(Long id) {
+        userRepository.deleteById(id);
+        log.info("IN delete - user with id: {} successfully deleted");
     }
 }
